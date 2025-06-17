@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام القياس المتقدم </title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <link rel="stylesheet" href="style2.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-ruler-combined me-3"></i>نظام القياس المتقدم للجروح</h1>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mt-4">
+        <div class="step-indicator">
+            <div class="step active"><i class="fas fa-upload me-2"></i>رفع الصورة</div>
+            <div class="step"><i class="fas fa-ruler me-2"></i>معايرة المسطرة</div>
+            <div class="step"><i class="fas fa-draw-polygon me-2"></i>تحديد الجرح</div>
+            <div class="step"><i class="fas fa-calculator me-2"></i>حساب القياسات</div>
+        </div>
+    </div>
+
+    <div class="container app-container mt-4">
+        <div class="main-content">
+            <!-- Image Section -->
+            <div class="image-section">
+                <h3 class="mb-4"><i class="fas fa-syringe me-2"></i>منطقة القياس المتقدم</h3>
+                
+                <div class="canvas-container">
+                    <canvas id="woundCanvas"></canvas>
+                    <div class="hint-message" id="hintMessage"></div>
+                    <div class="ruler-display">
+                        <i class="fas fa-ruler me-2"></i> مقياس: <span id="scaleValue">1.00</span> بكسل/سم
+                    </div>
+                    <div class="measurement-display">
+                        <div><i class="fas fa-pencil-ruler me-2"></i> الطول: <span id="currentLength">0.00</span> سم</div>
+                        <div><i class="fas fa-vector-square me-2"></i> المساحة: <span id="currentArea">0.00</span> سم²</div>
+                    </div>
+                </div>
+                
+                <div class="tools-panel">
+                    <h5 class="mb-3 text-center"><i class="fas fa-tools me-2"></i>أدوات القياس المتقدمة</h5>
+                    <div class="d-flex flex-wrap justify-content-center">
+                        <button class="tool-btn active" id="selectTool">
+                            <i class="fas fa-mouse-pointer"></i> تحديد
+                        </button>
+                        <button class="tool-btn" id="polygonTool">
+                            <i class="fas fa-draw-polygon"></i> تحديد الجرح
+                        </button>
+                        <button class="tool-btn" id="rulerTool">
+                            <i class="fas fa-ruler"></i> معايرة المسطرة
+                        </button>
+                        <button class="tool-btn" id="panTool">
+                            <i class="fas fa-hand-paper"></i> تحريك الصورة
+                        </button>
+                        <button class="tool-btn" id="clearTool">
+                            <i class="fas fa-trash-alt"></i> مسح الكل
+                        </button>
+                    </div>
+                    
+                    <div class="point-controls">
+                        <button class="point-btn" id="undoPointBtn" disabled>
+                            <i class="fas fa-undo me-1"></i>تراجع عن آخر نقطة
+                        </button>
+                        <button class="point-btn" id="closePolygonBtn" disabled>
+                            <i class="fas fa-check-circle me-1"></i>إغلاق الشكل
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">لون الرسم:</label>
+                                <div class="color-picker">
+                                    <div class="color-option active" style="background-color: #e63946;" data-color="#e63946"></div>
+                                    <div class="color-option" style="background-color: #1d3557;" data-color="#1d3557"></div>
+                                    <div class="color-option" style="background-color: #2a9d8f;" data-color="#2a9d8f"></div>
+                                    <div class="color-option" style="background-color: #e76f51;" data-color="#e76f51"></div>
+                                    <div class="color-option" style="background-color: #9b5de5;" data-color="#9b5de5"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">خيارات التكبير:</label>
+                                <div class="zoom-controls">
+                                    <button class="zoom-btn" id="zoomInBtn">+</button>
+                                    <button class="zoom-btn" id="zoomResetBtn">100%</button>
+                                    <button class="zoom-btn" id="zoomOutBtn">-</button>
+                                </div>
+                                
+                                <div class="rotation-controls">
+                                    <button class="rotation-btn" id="rotateLeftBtn" title="تدوير عكس عقارب الساعة">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                    <button class="rotation-btn" id="rotateRightBtn" title="تدوير مع عقارب الساعة">
+                                        <i class="fas fa-redo"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="pan-controls">
+                                    <div class="pan-row">
+                                        <button class="pan-btn" id="panUpBtn" title="تحريك لأعلى">
+                                            <i class="fas fa-arrow-up"></i>
+                                        </button>
+                                    </div>
+                                    <div class="pan-row">
+                                        <button class="pan-btn" id="panLeftBtn" title="تحريك لليسار">
+                                            <i class="fas fa-arrow-left"></i>
+                                        </button>
+                                        <button class="pan-btn" id="panCenterBtn" title="مركزة الصورة">
+                                            <i class="fas fa-crosshairs"></i>
+                                        </button>
+                                        <button class="pan-btn" id="panRightBtn" title="تحريك لليمين">
+                                            <i class="fas fa-arrow-right"></i>
+                                        </button>
+                                    </div>
+                                    <div class="pan-row">
+                                        <button class="pan-btn" id="panDownBtn" title="تحريك لأسفل">
+                                            <i class="fas fa-arrow-down"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between flex-wrap">
+                    <div>
+                        <label for="imageUpload" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>رفع صورة جديدة
+                        </label>
+                        <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                    </div>
+                    <button class="btn btn-success" id="calculateBtn">
+                        <i class="fas fa-calculator me-2"></i>حساب القياسات الدقيقة
+                    </button>
+                </div>
+            </div>
+            
+            <div class="controls-section">
+                <h3 class="mb-4"><i class="fas fa-chart-line me-2"></i>نتائج القياس الدقيقة</h3>
+                
+                <div class="results-card">
+                    <h5 class="mb-3 text-center"><i class="fas fa-ruler-combined me-2"></i>قياسات الجرح</h5>
+                    
+                    <div class="measurement-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-ruler-horizontal fa-2x text-primary"></i>
+                            </div>
+                            <div class="text-end">
+                                <h6 class="mb-0">الطول الدقيق</h6>
+                                <h3 class="mb-0" id="lengthValue">0.00 سم</h3>
+                                <small class="text-muted">أكبر مسافة في الجرح</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="measurement-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-ruler-vertical fa-2x text-primary"></i>
+                            </div>
+                            <div class="text-end">
+                                <h6 class="mb-0">العرض الدقيق</h6>
+                                <h3 class="mb-0" id="widthValue">0.00 سم</h3>
+                                <small class="text-muted">أصغر مسافة في الجرح</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="measurement-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-border-all fa-2x text-primary"></i>
+                            </div>
+                            <div class="text-end">
+                                <h6 class="mb-0">المساحة الداخلية</h6>
+                                <h3 class="mb-0" id="areaValue">0.00 سم²</h3>
+                                <small class="text-muted">المساحة الفعلية للجرح</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer mt-5">
+        <div class="container text-center">
+            <p class="mb-0">نظام القياس المتقدم | اسبريسو</p> 
+        </div>
+    </footer>
+
+    <script src="script2.js"></script>
+</body>
+</html>
